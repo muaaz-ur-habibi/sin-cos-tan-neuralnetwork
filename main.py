@@ -1,8 +1,7 @@
-from torch import nn, optim, tensor
-
+from torch import nn, optim, tensor, save
 import math
-
 import matplotlib.pyplot as plot
+import datetime as dt
 
 
 # data model. handles all the necessary data related funtions
@@ -82,7 +81,7 @@ class DataModel:
                     datax:list,
                     datay:list):
         
-        plot.plot(datax, datay, color='green', label=f'Original: {function_to_train} function')
+        plot.plot(datax, datay, color='green', label=f'Original: {function_to_train.capitalize()} function')
         plot.show()
 
 
@@ -116,9 +115,17 @@ class MainModel(nn.Module):
         x = self.output_neurons(x)
 
         return x
+
+def save_model(path_to_save:str="trained_models"):
+    
+    name = f"{function_to_train}-function_trained_model-{dt.date.today()}.pt"
+
+    save(model.state_dict(), f"{path_to_save}/{name}")
+
     
 # the function to train the model on
-function_to_train = 'cos'
+function_to_train = 'sin'
+
 # initialize the variables
 input_size = 1
 hidden_size = 35
@@ -133,13 +140,17 @@ model = MainModel(inputs=input_size,
 
 data_model = DataModel()
 
+# data creation variables
+range_to_generate = 100
+divide_by = 10
+
 # create the input and output data
 if function_to_train == 'sin':
-    data_in, data_out = data_model.create_sin_input_outputs(100, 10)
+    data_in, data_out = data_model.create_sin_input_outputs(range_to_generate, divide_by)
 elif function_to_train == 'cos':
-    data_in, data_out = data_model.create_cos_input_outputs(100, 10)
+    data_in, data_out = data_model.create_cos_input_outputs(range_to_generate, divide_by)
 elif function_to_train == 'tan':
-    data_in, data_out = data_model.create_tan_input_outputs(100, 10)
+    data_in, data_out = data_model.create_tan_input_outputs(range_to_generate, divide_by)
 
 # create optimizer and loss functions
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -180,3 +191,9 @@ if __name__ == "__main__":
         data_out,
         predictions
     )
+
+    save_or_not = input("Would you like to save this model? (y/n) ")
+    if save_or_not.lower() == 'y':
+        save_model()
+    else:
+        exit(0)
